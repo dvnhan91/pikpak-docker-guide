@@ -15,6 +15,18 @@ The author may earn commission when an eligible referred user purchases Premium.
 Existing users should sign in to their existing account.
 You can register without the referral code using `--affiliate=`.
 
+## AI agent skill
+
+Install this skill to let your AI agent help you set up and use PikPak CLI in Docker:
+
+```bash
+npx skills add dvnhan91/pikpak-docker-guide --skill pikpak-docker
+```
+
+Example prompt:
+
+> Help me set up PikPak CLI in Docker with persistent login and a downloads folder.
+
 ## Requirements
 
 - Docker with Docker Compose support
