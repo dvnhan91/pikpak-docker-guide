@@ -1,4 +1,4 @@
-# PikPak CLI for Linux
+# PikPak CLI for Docker
 
 A community guide to installing and using the official PikPak CLI on Linux.
 
