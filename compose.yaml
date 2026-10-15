@@ -1,0 +1,26 @@
+services:
+  pikpak-cli:
+    image: debian:bookworm-slim
+    container_name: pikpak-cli
+    restart: unless-stopped
+    working_dir: /files
+
+    environment:
+      PIKPAK_INSTALL_DIR: /usr/local/bin
+
+    volumes:
+      - ./config:/root/.pikpak
+      - ./files:/files
+
+    command:
+      - /bin/bash
+      - -ec
+      - |
+        if ! command -v pikpak >/dev/null 2>&1; then
+          apt-get update
+          apt-get install -y --no-install-recommends curl ca-certificates
+          curl -fsSL https://download.mypikpak.com/cli/install.sh -o /tmp/pikpak-install.sh
+          bash /tmp/pikpak-install.sh
+          rm -f /tmp/pikpak-install.sh
+        fi
+        exec sleep infinity
