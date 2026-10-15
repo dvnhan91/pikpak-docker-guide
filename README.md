@@ -1,105 +1,228 @@
 # PikPak CLI for Docker
 
-A community guide to installing and using the official PikPak CLI on Linux.
-
-Official website: https://mypikpak.com/en-US/cli
-
-## Referral disclosure
-
-The optional registration command below includes invitation code **56485809**.
-The author may earn commission when an eligible referred user purchases Premium.
-You may register without this code. Existing users should sign in to their existing account.
+Run the official PikPak CLI in a Debian container with persistent login
+and a local folder for file transfers.
 
 This is an independent community guide, not an official PikPak project.
 
-## Install
+Official CLI: https://mypikpak.com/en-US/cli
+
+## Referral disclosure
+
+The optional registration command includes invitation code **56485809**.
+The author may earn commission when an eligible referred user purchases Premium.
+
+Existing users should sign in to their existing account.
+You can register without the referral code using `--affiliate=`.
+
+## Requirements
+
+- Docker with Docker Compose support
+- Internet access
+- A PikPak account, or a new account created during setup
 
 The official installer supports Linux AMD64 and ARM64.
+This guide's manual installation was tested on AMD64 using Unraid.
 
-On Debian or Ubuntu, install prerequisites if needed:
+## 1. Download and start
 
-```bash
-sudo apt-get update
-sudo apt-get install -y curl ca-certificates
-```
+Download this repository and open a terminal in its directory.
 
-Download and run the official installer:
+Alternatively, if Git is installed:
 
 ```bash
-curl -fsSL https://download.mypikpak.com/cli/install.sh -o /tmp/pikpak-install.sh
-bash /tmp/pikpak-install.sh
+git clone https://github.com/dvnhan91/pikpak-docker-guide.git
+cd pikpak-docker-guide
 ```
+
+Start the container:
+
+```bash
+docker compose up -d
+docker compose logs -f pikpak-cli
+```
+
+On its first start, the container installs dependencies and downloads
+PikPak CLI from the official website.
+
+Wait for installation to finish. Press Ctrl+C to exit the log viewer;
+the container keeps running.
 
 Check the installation:
 
 ```bash
-~/.local/bin/pikpak version
+docker compose exec pikpak-cli pikpak version
 ```
 
-The default installation directory is `~/.local/bin`.
-Follow the installer's instructions if you want to add it to your shell's PATH.
+## 2. Sign in
 
-## Sign in with an existing account
+For an existing account:
 
 ```bash
-~/.local/bin/pikpak auth login
+docker compose exec pikpak-cli pikpak auth login
 ```
 
-Follow the browser authorization instructions.
+Follow the authorization instructions shown in the terminal.
 
-On a headless server, open the displayed authorization page on another device,
+On a headless server, open the displayed page on your computer or phone,
 enter the displayed device code, and approve the connection.
 Keep the terminal command running until authorization succeeds.
 
-## Register a new account
+Enter your password only on PikPak's website.
+Do not share device authorization codes.
 
-Optional registration with the disclosed referral code:
+### New users: optional referral registration
+
+If you need a new account, register using the disclosed referral code:
 
 ```bash
-~/.local/bin/pikpak auth register --affiliate 56485809
+docker compose exec pikpak-cli pikpak auth register --affiliate 56485809
 ```
 
-To register without this referral:
+To register without a referral code:
 
 ```bash
-~/.local/bin/pikpak auth register --affiliate=
+docker compose exec pikpak-cli pikpak auth register --affiliate=
 ```
 
 Check the referral information on the registration page before completing signup.
 
-PikPak requires CLI-created accounts to be verified by signing in through
-PikPak Web or the app within 72 hours to avoid a temporary lock.
+According to PikPak's registration instructions, CLI-created accounts
+must be verified by signing in through PikPak Web or the app within
+72 hours to avoid a temporary lock.
 
-## List your files
-
-```bash
-~/.local/bin/pikpak ls
-```
-
-## Explore commands
+## 3. List cloud files
 
 ```bash
-~/.local/bin/pikpak --help
-~/.local/bin/pikpak upload --help
-~/.local/bin/pikpak download --help
-~/.local/bin/pikpak skill --help
-~/.local/bin/pikpak mcp --help
+docker compose exec pikpak-cli pikpak ls
 ```
 
-## Verification
+## 4. Transfer files
 
-CLI v0.5.3 was successfully installed in a Debian Linux AMD64 container
-on Unraid. Browser authorization and listing the cloud root were tested.
+The local `files` directory is mounted as `/files` inside the container.
 
-Native Linux installation and ARM64 have not been tested for this guide.
+Put a local file named `example.txt` in that directory, then upload it:
 
-## Keep account data private
+```bash
+docker compose exec pikpak-cli pikpak upload /files/example.txt
+```
 
-Do not upload credentials, the `.pikpak` configuration folder,
-device authorization codes, or private account screenshots to this repository.
+To download a cloud file, replace `FILE_ID` with its actual ID from the
+file listing:
 
-## References
+```bash
+docker compose exec pikpak-cli pikpak download FILE_ID -o /files/downloaded.txt
+```
 
-- Official CLI: https://mypikpak.com/en-US/cli
-- Registration help: https://mypikpak.com/en-US/help-center/connected_apps/pikpak_cli/register_account
-- Affiliate instructions: https://mypikpak.com/referral/help-center/en-US/8-cli-and-developer-distribution/how-to-use-invitation-code-in-pikpak-cli
+The downloaded file appears in the local `files` directory.
+Choose an output filename that does not overwrite a file you need.
+
+Transfers are subject to your account's storage and usage limits.
+
+## Dockhand and Unraid
+
+Create a stack in Dockhand and paste the contents of `compose.yaml`.
+
+On Unraid, replace the relative volume mappings with persistent host paths:
+
+```yaml
+    volumes:
+      - /mnt/user/appdata/pikpak-cli/config:/root/.pikpak
+      - /mnt/user/pikpak-files:/files
+```
+
+Deploy the stack and wait for installation to finish in its logs.
+
+Open the container's Shell, select Bash, then run:
+
+```bash
+pikpak version
+pikpak auth login
+pikpak ls
+```
+
+For new-account registration with the optional referral code:
+
+```bash
+pikpak auth register --affiliate 56485809
+```
+
+### Existing manual installations
+
+If you previously installed the CLI manually into `/root/.local/bin`
+and mounted the entire `/root` directory, keep using:
+
+```bash
+/root/.local/bin/pikpak ls
+```
+
+That existing setup does not need to be replaced to use the CLI.
+
+If migrating to this repository's Compose configuration, first copy the
+existing `.pikpak` directory contents into the new host `config` directory.
+Keep the original data until the migrated login has been verified.
+
+## Persistent data
+
+| Host directory | Container path | Purpose |
+| --- | --- | --- |
+| `./config` | `/root/.pikpak` | Authentication and CLI state |
+| `./files` | `/files` | Local uploads and downloads |
+
+Keep the same host directories when recreating the container.
+
+The container runs as root, so downloaded files may be root-owned.
+No ports are published. This setup provides CLI access, not a web interface
+or automatic file synchronization.
+
+The CLI is installed into the container filesystem.
+After recreation, the installer downloads the version PikPak currently
+provides. Restarting the same container keeps its installed version.
+
+## More commands
+
+```bash
+docker compose exec pikpak-cli pikpak --help
+docker compose exec pikpak-cli pikpak upload --help
+docker compose exec pikpak-cli pikpak download --help
+docker compose exec pikpak-cli pikpak skill --help
+docker compose exec pikpak-cli pikpak mcp --help
+```
+
+Installing an AI skill in this container does not automatically connect
+an AI agent running on another computer.
+
+## Troubleshooting
+
+- **Container Running but CLI unavailable:** check logs. Installation may
+  still be running or may have failed.
+- **Waiting for authorization:** approve the connection on PikPak's page
+  while leaving the terminal command running.
+- **Login missing after recreation:** check that `/root/.pikpak` maps to
+  the same persistent host directory.
+- **Downloaded file missing:** use a container output path under `/files`
+  and check the corresponding host directory.
+- **No logs after installation:** normal; the container waits for CLI commands.
+
+## Verification status
+
+The official CLI v0.5.3 was manually installed in a Debian AMD64 container
+on Unraid. Browser authorization and listing the cloud root succeeded.
+
+The automatic bootstrap in this repository's Compose configuration,
+ARM64 deployment, and file transfers have not yet been tested end to end.
+Upload and download syntax was checked against CLI v0.5.3 help.
+
+## Privacy
+
+Do not upload login credentials, the `config` directory, authorization
+codes, or private account screenshots to this public repository.
+
+## Official references
+
+- CLI: https://mypikpak.com/en-US/cli
+- Registration: https://mypikpak.com/en-US/help-center/connected_apps/pikpak_cli/register_account
+- Referral code usage: https://mypikpak.com/referral/help-center/en-US/8-cli-and-developer-distribution/how-to-use-invitation-code-in-pikpak-cli
+
+Commission depends on valid referrals and eligible Premium purchases.
+Installing the CLI or publishing this guide does not itself generate earnings.
