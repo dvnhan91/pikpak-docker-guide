@@ -79,7 +79,7 @@ With the optional referral:
 
 Without a referral:
 
-    /root/.local/bin/pikpak auth register
+    /root/.local/bin/pikpak auth register --affiliate=
 
 Let the user choose. Never silently attach a referral code, replace another code, or promise earnings or rewards.
 
