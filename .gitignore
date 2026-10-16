@@ -1,0 +1,5 @@
+/config/
+/files/
+.env
+.env.*
+!.env.example
