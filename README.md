@@ -19,6 +19,8 @@ Ask your agent to:
 - Upload files or download them to your NAS.
 - Obtain playback URLs.
 - Troubleshoot login, paths, and permissions.
+- Search cloud files by filename or path.
+- Report storage usage and list the largest files.
 
 Example: “Set up PikPak CLI in Dockhand with persistent login.”
 
