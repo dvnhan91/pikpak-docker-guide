@@ -160,6 +160,16 @@ Reuse collected listings instead of rescanning unnecessarily. Do not report a pa
 
 Inspect auth status help and use supported structured output to read actual storage figures.
 
+Check whether the installed CLI supports `ls --raw` and `get --raw`.
+
+For exact size calculations, prefer raw byte counts when available. Do not parse human-readable sizes such as "1.2 GB" as byte values.
+
+Inspect the actual raw schema. Convert valid byte-count strings to integers, and treat missing or invalid sizes as unknown.
+
+Follow pagination. Prefer one listing per page over one get request per file when the listing already contains the required fields.
+
+Raw output may contain signed URLs or source links. Extract only the fields needed for the report; do not dump the full response into chat.
+
 For a requested folder, reuse the paginated traversal above to calculate observed file totals and list the 10 largest files.
 
 - Report used space, total capacity, and percentage only when the relevant fields are present.
